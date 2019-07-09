@@ -1,0 +1,75 @@
+---
+title: "L4P2-Regressao_romantica"
+author: "Nailson Cunha"
+date: "9 de julho de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(GGally)
+library(pscl)
+library(broom)
+library(tidyverse)
+library(modelr) # devtools::install_github("hadley/modelr")
+
+theme_set(theme_bw())
+```
+
+
+```{r}
+dados = read_csv("speed-dating/speed-dating2.csv")
+glimpse(dados)
+```
+
+## Que fatores nos dados têm efeito re;evante na chance do casal ter um match?
+
+```{r}
+dados %>% 
+  ggplot(aes(x = fun, fill = dec)) +
+  geom_bar(position = "dodge") 
+
+dados %>% 
+  ggplot(aes(x = attr, fill = dec)) +
+  geom_bar(position = "dodge")
+
+dados %>% 
+  ggplot(aes(x = intel, fill = dec)) +
+  geom_bar(position = "dodge")
+
+dados %>% 
+  ggplot(aes(x = order, fill = dec)) +
+  geom_bar(position = "dodge")
+```
+
+
+
+```{r}
+dados %>% 
+  mutate(dec = as.factor(dec), 
+         gender = as.factor(gender))
+
+decmodel = glm(dec ~ fun + attr + intel + order, 
+                  data = x, 
+                  family = "binomial")
+
+tidy(decmodel, conf.int = TRUE, exponentiate = TRUE)
+glance(decmodel)
+pR2(decmodel)
+```
+
+
+
+```{r}
+# dados %>% 
+#   mutate(dec = as.factor(dec), 
+#          gender = as.factor(gender))
+# 
+# gendermodel = glm(dec ~ fun + attr + intel + order, 
+#                   data = dados, 
+#                   family = "binomial")
+# 
+# tidy(gendermodel, conf.int = TRUE, exponentiate = TRUE)
+# glance(gendermodel)
+# pR2(gendermodel)
+```
