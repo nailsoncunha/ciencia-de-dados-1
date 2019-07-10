@@ -22,35 +22,45 @@ dados = read_csv("speed-dating/speed-dating2.csv")
 glimpse(dados)
 ```
 
-## Que fatores nos dados têm efeito re;evante na chance do casal ter um match?
+## As variáveis escolhidas
+
+A regressão será feita levando em conta as variáveis **fun**, **attr**, **intel** e **order**. A ideia é verificar principalmente se no fim, mesmo sendo favorável em todos os atributos, a ordem em que os dois participantes se encontraram pode ter um peso negativo no *match*.
+
+## Que fatores nos dados têm efeito relevante na chance do casal ter um match?
 
 ```{r}
 dados %>% 
   ggplot(aes(x = fun, fill = dec)) +
-  geom_bar(position = "dodge") 
+  geom_bar(position = "dodge") +
+  labs(x = "Quão divertido a pessoa 1 achou a pessoa 2 (0 à 10)")
 
 dados %>% 
   ggplot(aes(x = attr, fill = dec)) +
-  geom_bar(position = "dodge")
+  geom_bar(position = "dodge") +
+  labs(x = "Quão atraente a pessoa 1 achou a pessoa 2 (0 à 10)")
 
 dados %>% 
   ggplot(aes(x = intel, fill = dec)) +
-  geom_bar(position = "dodge")
+  geom_bar(position = "dodge") +
+  labs(x = "Quão inteligente a pessoa 1 achou a pessoa 2 (0 à 10)")
 
 dados %>% 
   ggplot(aes(x = order, fill = dec)) +
-  geom_bar(position = "dodge")
+  geom_bar(position = "dodge") +
+  labs(x = "Posição do encontro seguindo a ordem")
 ```
 
-
+Visualizando as variáveis é possível perceber que **fun**, **attr** e **intel** tem um  comportamento parecido. Em todas o pico de *yes* é algo em torno das notas entre 7.0 e 8.5. Já a variável order apresenta um comportamento aparentemente decrescente, em que quanto mais longe na ordem foi o encontro menos *yes* aconteceram.
 
 ```{r}
-dados %>% 
+x = read_csv("speed-dating/speed-dating2.csv") %>% 
   mutate(dec = as.factor(dec), 
          gender = as.factor(gender))
+# dados %>% 
+#   mutate(dec = as.factor(dec))
 
 decmodel = glm(dec ~ fun + attr + intel + order, 
-                  data = x, 
+                  data = x,
                   family = "binomial")
 
 tidy(decmodel, conf.int = TRUE, exponentiate = TRUE)
@@ -59,17 +69,10 @@ pR2(decmodel)
 ```
 
 
+Os valores obtidos na regressão logística aplicada mostram que a variável que pode ter o maior impacto, segundo o modelo encontrado, é a **attr**, referente ao quão atraente a pessoa 1 achou a pessoa 2. Considerando o intervalo de confiança [95% CI, 1.66, 1.84] o impacto dessa variável pode ser de moderado a grande, próximo de 2, isto é quase tendo o impacto de duplicar o *odd ratio*.
 
-```{r}
-# dados %>% 
-#   mutate(dec = as.factor(dec), 
-#          gender = as.factor(gender))
-# 
-# gendermodel = glm(dec ~ fun + attr + intel + order, 
-#                   data = dados, 
-#                   family = "binomial")
-# 
-# tidy(gendermodel, conf.int = TRUE, exponentiate = TRUE)
-# glance(gendermodel)
-# pR2(gendermodel)
-```
+A variável **fun** também tem um impacto considerável 1.38 [95% CI, 1.32, 1.45] tendo também uma influência moderada nos fatores que impactam no *match* entre as pessoas envolvidas no encontro (Considerando nosso modelo com essas 4 variáveis).
+
+A variável **intel**, que refere-se ao quão inteligente a pessoa 1 achou a pessoa 2 (numa escala de 1 à 10), mostrou um efeito diferente do esperado, podendo ter um efeito negativo quando considerando o que pode fazer um casal dar *match*. Entretando, considerando seu intervalo de confiança 0.91 [95% CI, 0.86, 0.96] seu efeito negativo pode ser baixo ou praticamente irrelevante.
+
+Assim como a variável **intel**, a variável **order** também surpreendeu no seu efeito. Era esperado que quanto mais distante fosse o encontro na ordem dos encontros, mais impacto negativo ele tivesse, talvez por um cansaço de ter vários encontros seguidos ou outros fatores parecidos. Entretanto **order** afeta de uma forma baixíssima o *odd ratio* ou até mesmo pode não ter efeito dado o intervalo de confiança 0.99 [95% CI, 0.98, 1.00] muito próximo ou igual a 1.
